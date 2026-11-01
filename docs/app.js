@@ -9,7 +9,7 @@
 
   // ---------- durum ----------
   function defaultState() {
-    const s = { chars: {}, shared: { notes: "", moon: 0, clues: {}, prep: {} } };
+    const s = { chars: {}, shared: { notes: "", moon: 0, clues: {}, prep: {}, reveal: {} } };
     for (const c of D.characters) {
       const cs = { hp: c.hpMax, notes: "", daily: {} };
       if (c.resource.kind === "omen") cs.omens = [];
@@ -168,24 +168,57 @@
     applyTheme(c);
     const tab = view.tab || "sheet";
     app.innerHTML = topbar(c.player) + `
-      <div class="tabs"><button data-t="sheet" class="${tab === "sheet" ? "active" : ""}">Karakter</button><button data-t="shared" class="${tab === "shared" ? "active" : ""}">Ortak Notlar</button></div>
+      <div class="tabs"><button data-t="sheet" class="${tab === "sheet" ? "active" : ""}">Karakter</button><button data-t="shared" class="${tab === "shared" ? "active" : ""}">Ortak Notlar</button><button data-t="gallery" class="${tab === "gallery" ? "active" : ""}">Görseller</button></div>
       <div id="content"></div>`;
     bindTop();
     app.querySelectorAll(".tabs button").forEach(b => b.onclick = () => { view.tab = b.dataset.t; render(); });
     const content = document.getElementById("content");
-    if (tab === "sheet") renderSheet(content, c, false); else renderShared(content, false);
+    if (tab === "sheet") renderSheet(content, c, false);
+    else if (tab === "gallery") renderGallery(content, false, c.id);
+    else renderShared(content, false);
+  }
+
+  // ---------- görseller ----------
+  const CATS = [["karakter", "Karakterler"], ["npc", "NPC'ler"], ["mekan", "Mekânlar"], ["olay", "Olaylar"]];
+  function lightbox(img) {
+    let lb = document.getElementById("lightbox");
+    if (!lb) { lb = document.createElement("div"); lb.id = "lightbox"; lb.className = "lightbox"; document.body.appendChild(lb); lb.onclick = () => lb.hidden = true; }
+    lb.innerHTML = `<img src="${esc(img.file)}" alt=""><div class="cap"><b>${esc(img.title)}</b>${img.caption ? `<br>${esc(img.caption)}` : ""}</div>`;
+    lb.hidden = false;
+  }
+  function renderGallery(el, dm, selfId) {
+    const all = window.IMAGES || [];
+    const reveal = state.shared.reveal || {};
+    const visible = img => dm || !!reveal[img.id] || (img.owner && img.owner === selfId);
+    const cat = view.gcat || "karakter";
+    const items = all.filter(i => i.cat === cat && visible(i));
+    const counts = Object.fromEntries(CATS.map(([k]) => [k, all.filter(i => i.cat === k && visible(i)).length]));
+    el.innerHTML = `
+      <div class="tabs sub">${CATS.map(([k, t]) => `<button data-c="${k}" class="${cat === k ? "active" : ""}">${t}${counts[k] ? ` <span class="badge">${counts[k]}</span>` : ""}</button>`).join("")}</div>
+      ${dm ? `<p class="hint" style="margin:0 0 8px">Oyuncular yalnızca "göster" dediğin görselleri görür; her oyuncunun kendi portresi her zaman görünür. Dosyalar: docs/img/… (images.js).</p>` : ""}
+      ${items.length ? `<div class="gallery">${items.map(img => `
+        <figure class="gitem ${reveal[img.id] ? "shown" : ""}" data-id="${img.id}">
+          <img src="${esc(img.file)}" alt="" loading="lazy" onerror="this.parentElement.classList.add('missing')">
+          <div class="ph">${MASK_SVG}</div>
+          <figcaption><b>${esc(img.title)}</b>${img.caption ? `<span>${esc(img.caption)}</span>` : ""}
+            ${dm ? `<button class="sm ${reveal[img.id] ? "danger" : "primary"}" data-reveal="${img.id}">${reveal[img.id] ? "Oyunculardan gizle" : "Oyunculara göster"}</button>` : ""}</figcaption>
+        </figure>`).join("")}</div>` : `<div class="card center muted">${dm ? "Bu kategoride görsel tanımlı değil." : "Henüz görünen bir görsel yok. Hikâye ilerledikçe burası dolacak."}</div>`}`;
+    el.querySelectorAll(".tabs.sub button").forEach(b => b.onclick = () => { view.gcat = b.dataset.c; render(); });
+    el.querySelectorAll(".gitem img").forEach(im => im.onclick = () => { const img = all.find(i => i.id === im.parentElement.dataset.id); if (img && !im.parentElement.classList.contains("missing")) lightbox(img); });
+    el.querySelectorAll("[data-reveal]").forEach(b => b.onclick = e => { e.stopPropagation(); const id = b.dataset.reveal; store.set(`shared/reveal/${id}`, !reveal[id]); toast(reveal[id] ? "Gizlendi." : "Oyunculara açıldı."); render(); });
   }
   function renderDM() {
     const tab = view.tab || D.characters[0].id;
     applyTheme(chars[tab] || null);
     app.innerHTML = topbar("DM") + `
-      <div class="tabs">${D.characters.map(c => `<button data-t="${c.id}" class="${tab === c.id ? "active" : ""}">${esc(c.player)}</button>`).join("")}<button data-t="shared" class="${tab === "shared" ? "active" : ""}">Ortak</button><button data-t="story" class="${tab === "story" ? "active" : ""}">Hikâye</button></div>
+      <div class="tabs">${D.characters.map(c => `<button data-t="${c.id}" class="${tab === c.id ? "active" : ""}">${esc(c.player)}</button>`).join("")}<button data-t="shared" class="${tab === "shared" ? "active" : ""}">Ortak</button><button data-t="story" class="${tab === "story" ? "active" : ""}">Hikâye</button><button data-t="gallery" class="${tab === "gallery" ? "active" : ""}">Görseller</button></div>
       <div id="content"></div>`;
     bindTop();
     app.querySelectorAll(".tabs button").forEach(b => b.onclick = () => { view.tab = b.dataset.t; render(); });
     const content = document.getElementById("content");
     if (tab === "shared") renderShared(content, true);
     else if (tab === "story") renderStory(content);
+    else if (tab === "gallery") renderGallery(content, true);
     else renderSheet(content, chars[tab], true);
   }
 
@@ -236,7 +269,7 @@
     const det = (title, body, open) => `<details ${open ? "open" : ""}><summary><span class="name">${esc(title)}</span></summary><div class="body">${body}</div></details>`;
     const list = arr => `<ul class="beats">${arr.map(x => `<li>${nl(x)}</li>`).join("")}</ul>`;
     const checklist = (items, key) => `<div class="checklist">${items.map((it, i) => { const id = it.id || ("p" + i); const done = !!state.shared[key]?.[id]; return `<label class="${done ? "done" : ""}"><input type="checkbox" data-ck="${key}/${id}" ${done ? "checked" : ""}><span>${nl(it.text || it)}</span></label>`; }).join("")}</div>`;
-    const secs = [["ozet", "Özet"], ["nusha", "Nüshalar"], ["perde", "Perdeler"], ["gercek", "Gerçek"], ["glamour", "Glamour"], ["kum", "Kum"], ["npc", "NPC'ler"], ["kars", "Karşılaşmalar"], ["yaratik", "Yaratıklar"], ["ipucu", "İpucu takibi"], ["hazirlik", "Hazırlık"]];
+    const secs = [["ozet", "Özet"], ["nusha", "Nüshalar"], ["gorsel", "Görseller ↗"], ["perde", "Perdeler"], ["gercek", "Gerçek"], ["glamour", "Glamour"], ["kum", "Kum"], ["npc", "NPC'ler"], ["kars", "Karşılaşmalar"], ["yaratik", "Yaratıklar"], ["ipucu", "İpucu takibi"], ["hazirlik", "Hazırlık"]];
     const para = s => `<p class="prose">${nl(s)}</p>`;
     el.innerHTML = `
       <div class="hero"><div class="emblem">${MASK_SVG}</div><h2>${esc(S.title)}</h2><div class="sub">${esc(S.tagline)}</div></div>
@@ -275,7 +308,7 @@
       const h = S.handouts[Number(b.dataset.handoutCopy)];
       try { await navigator.clipboard.writeText(h.text); toast("Panoya kopyalandı."); } catch { toast("Kopyalama izni yok; metni seçip kopyala."); }
     });
-    el.querySelectorAll(".toc a").forEach(a => a.onclick = e => { e.preventDefault(); const t = document.querySelector(a.getAttribute("href")); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); });
+    el.querySelectorAll(".toc a").forEach(a => a.onclick = e => { e.preventDefault(); if (a.getAttribute("href") === "#s-gorsel") { view.tab = "gallery"; return render(); } const t = document.querySelector(a.getAttribute("href")); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); });
   }
 
   // ---------- ortak ----------
@@ -321,6 +354,7 @@
     el.innerHTML = `
       <div class="hero${soulCls}">
         <div class="emblem">${EMBLEMS[c.theme.emblem] || ""}</div>
+        ${(() => { const p = (window.IMAGES || []).find(i => i.cat === "karakter" && i.owner === c.id && !(c.resource.kind === "souls" && i.id.endsWith("-dark") !== (cs.res >= 3))); return p ? `<img class="portrait" src="${esc(p.file)}" alt="" onerror="this.remove()">` : ""; })()}
         <h2>${esc(c.title)}</h2>
         <div class="sub">${esc(c.race)} · ${esc(c.cls)} · ${esc(c.bg)}</div>
         <div class="hp">

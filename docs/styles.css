@@ -209,3 +209,26 @@ details.off summary { cursor: default; }
 .toc a:hover { border-color: var(--c1); }
 .prose { margin: 0 0 8px; line-height: 1.65; color: #e6e0ef; }
 details > .body .prose { margin-top: 4px; }
+
+/* ---- görseller ---- */
+.tabs.sub { margin-top: 0; }
+.tabs.sub button { font-size: .85rem; padding: 6px 12px; }
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+.gitem { margin: 0; background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); position: relative; }
+.gitem img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; cursor: zoom-in; background: #000; }
+.gitem .ph { display: none; aspect-ratio: 4 / 5; align-items: center; justify-content: center; color: var(--muted); opacity: .35; }
+.gitem .ph svg { width: 50%; }
+.gitem.missing img { display: none; }
+.gitem.missing .ph { display: flex; }
+.gitem figcaption { padding: 8px 10px 10px; font-size: .82rem; display: flex; flex-direction: column; gap: 4px; }
+.gitem figcaption span { color: var(--muted); }
+.gitem figcaption button { margin-top: 4px; }
+.gitem.shown { border-color: color-mix(in srgb, var(--ok) 60%, transparent); }
+.gitem.shown::after { content: "oyunculara açık"; position: absolute; top: 8px; left: 8px; font-size: .68rem; padding: 2px 8px; border-radius: 999px; background: rgba(88,196,140,.9); color: #062b17; font-weight: 700; }
+.lightbox { position: fixed; inset: 0; z-index: 60; background: rgba(5,4,8,.94); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; cursor: zoom-out; animation: fadein .2s ease both; }
+.lightbox[hidden] { display: none; }
+.lightbox img { max-width: 100%; max-height: 80vh; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.7); }
+.lightbox .cap { margin-top: 12px; text-align: center; color: var(--text); font-size: .95rem; max-width: 600px; }
+.hero .portrait { position: absolute; right: 0; top: 0; height: 100%; width: 42%; object-fit: cover; object-position: top; opacity: .9; -webkit-mask-image: linear-gradient(90deg, transparent, #000 45%); mask-image: linear-gradient(90deg, transparent, #000 45%); z-index: 0; }
+.hero .portrait + * , .hero .portrait ~ h2, .hero .portrait ~ .sub, .hero .portrait ~ .hp { position: relative; z-index: 1; }
+.hero .emblem:has(+ .portrait) { opacity: 0; }
