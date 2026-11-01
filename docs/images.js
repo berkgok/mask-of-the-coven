@@ -22,7 +22,10 @@ window.IMAGES = [
   { id: "npc-marta", cat: "npc", title: "Marta", file: "img/npc/marta.jpg", caption: "Asılı Adam hanının sahibi." },
   { id: "npc-pip", cat: "npc", title: "Pip", file: "img/npc/pip.jpg", caption: "Çatılarda yaşayan çocuk; kuzgun besler." },
   { id: "npc-mum", cat: "npc", title: "Mum · kuzgun", file: "img/npc/kuzgun-mum.jpg", caption: "Vera'nın kuzgunu; kanadı mum damlalı." },
-  { id: "npc-mum-bekcisi", cat: "npc", title: "Mum Bekçisi", file: "img/npc/mum-bekcisi.jpg", caption: "Balmumu beden; göğsünde yanan fitil." },
+  { id: "npc-mum-bekcisi", cat: "npc", title: "Mum Bekçisi", file: "img/npc/mum-bekcisi-1.jpg", caption: "Balmumu beden; göğsünde yanan fitil." },
+  { id: "npc-mum-bekcisi-2", cat: "npc", title: "Mum Bekçisi · II", file: "img/npc/mum-bekcisi-2.jpg", caption: "Bataklıktan doğrulan ikinci beden." },
+  { id: "npc-mum-bekcisi-3", cat: "npc", title: "Mum Bekçisi · III", file: "img/npc/mum-bekcisi-3.jpg", caption: "Yüzünde Vera'nın izi." },
+  { id: "npc-mum-bekcisi-4", cat: "npc", title: "Mum Bekçisi · IV", file: "img/npc/mum-bekcisi-4.jpg", caption: "Fitili sönmek üzere." },
   { id: "npc-kul-hanimlar", cat: "npc", title: "Kül Hanımlar", file: "img/npc/kul-hanimlar.jpg", caption: "Dokuz yanık kadının ruhu." },
   { id: "npc-cete", cat: "npc", title: "Cadı avcısı çetesi", file: "img/npc/cete.jpg", caption: "Meşaleli kalabalık, önde papaz." },
 

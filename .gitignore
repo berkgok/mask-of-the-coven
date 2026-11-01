@@ -6,3 +6,7 @@ prep/
 *.log
 .DS_Store
 Thumbs.db
+
+# Görsel kaynakları: PNG orijinaller repoya girmez, sadece optimize edilmiş jpg
+docs/img/**/*.png
+docs/img/**/*.webp
