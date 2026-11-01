@@ -236,23 +236,46 @@
     const det = (title, body, open) => `<details ${open ? "open" : ""}><summary><span class="name">${esc(title)}</span></summary><div class="body">${body}</div></details>`;
     const list = arr => `<ul class="beats">${arr.map(x => `<li>${nl(x)}</li>`).join("")}</ul>`;
     const checklist = (items, key) => `<div class="checklist">${items.map((it, i) => { const id = it.id || ("p" + i); const done = !!state.shared[key]?.[id]; return `<label class="${done ? "done" : ""}"><input type="checkbox" data-ck="${key}/${id}" ${done ? "checked" : ""}><span>${nl(it.text || it)}</span></label>`; }).join("")}</div>`;
+    const secs = [["ozet", "Özet"], ["nusha", "Nüshalar"], ["perde", "Perdeler"], ["gercek", "Gerçek"], ["glamour", "Glamour"], ["kum", "Kum"], ["npc", "NPC'ler"], ["kars", "Karşılaşmalar"], ["yaratik", "Yaratıklar"], ["ipucu", "İpucu takibi"], ["hazirlik", "Hazırlık"]];
+    const para = s => `<p class="prose">${nl(s)}</p>`;
     el.innerHTML = `
-      <div class="hero"><div class="emblem">${MASK_SVG}</div><h2>${esc(S.title)}</h2><div class="sub">${esc(S.tagline)}</div><p class="small" style="position:relative;z-index:1;margin:10px 0 0;color:#efe7d6">${esc(S.synopsis)}</p></div>
-      <div class="card"><h3>Gerçek (sadece DM)</h3>${list(S.truth)}</div>
-      ${S.names ? `<div class="card"><h3>İsimler</h3>${list(S.names)}</div>` : ""}
-      ${S.glamour ? `<div class="card"><h3>Glamour nasıl çalışır</h3>${list(S.glamour)}</div>` : ""}
-      <div class="card"><h3>${esc(S.clock.name)}</h3>${list(S.clock.rules)}</div>
-      <div class="card"><h3>Kilitler</h3><table class="simple"><tr><th>Kim · yetenek</th><th>Nerede</th><th>Ne açar</th></tr>${S.locks.map(l => `<tr>${l.map(x => `<td>${esc(x)}</td>`).join("")}</tr>`).join("")}</table></div>
-      <div class="card"><h3>Perdeler</h3>${S.acts.map(a => det(`${a.title} · ${a.time}`, `
-          <div class="kv"><b>Amaç</b><span>${esc(a.goal)}</span><b>Kum</b><span>${esc(a.sand)}</span></div>
+      <div class="hero"><div class="emblem">${MASK_SVG}</div><h2>${esc(S.title)}</h2><div class="sub">${esc(S.tagline)}</div></div>
+      <div class="toc">${secs.map(([id, t]) => `<a href="#s-${id}">${esc(t)}</a>`).join("")}</div>
+
+      <div class="card" id="s-ozet"><h3>Özet</h3>${para(S.synopsis)}${S.overview ? `<h3 class="sec">Oyun nasıl akar</h3>${para(S.overview)}` : ""}${S.names ? `<h3 class="sec">Kim kimdir</h3>${list(S.names)}` : ""}</div>
+
+      <div class="card" id="s-nusha"><h3>Nüshalar</h3><p class="hint" style="margin:0 0 8px">Oyunculara verilecek yazılı belgeler ve hazır replikler. "Ortak notlara ekle" düğmesi metni Ortak Notlar'ın sonuna yazar; oyuncular anında görür. "Kopyala" panoya alır.</p>
+        ${(S.handouts || []).map((h, i) => det(h.title, `<div class="read">${nl(h.text)}</div><div class="row" style="margin-top:10px"><button class="sm primary" data-handout-add="${i}">Ortak notlara ekle</button><button class="sm" data-handout-copy="${i}">Kopyala</button></div>`)).join("")}</div>
+
+      <div class="card" id="s-perde"><h3>Perdeler</h3><p class="hint" style="margin:0 0 8px">Her perde önce düz yazıyla özetlenir (örnek akış), sonra sahne sahne açılır. İtalik kutular oyunculara okunacak metin, maddeler sana notlar.</p>
+        ${S.acts.map(a => det(`${a.title} · ${a.time}`, `
+          <div class="kv"><b>Amaç</b><span>${nl(a.goal)}</span><b>Kum</b><span>${esc(a.sand)}</span></div>
+          ${a.narrative ? `<h3 class="sec">Örnek akış</h3>${para(a.narrative)}` : ""}
+          <h3 class="sec">Sahneler</h3>
           ${a.scenes.map(sc => det(sc.title, `<div class="read">${nl(sc.read)}</div>${list(sc.beats)}`)).join("")}
           ${a.transition ? `<p class="hint" style="margin-top:10px"><b>Geçiş:</b> ${nl(a.transition)}</p>` : ""}`)).join("")}</div>
-      <div class="card"><h3>NPC'ler</h3>${S.npcs.map(n => det(`${n.name} · ${n.role}`, `<div class="kv"><b>Görünüş</b><span>${nl(n.look)}</span><b>Ses</b><span>${nl(n.voice)}</span><b>İster</b><span>${nl(n.wants)}</span><b>Sır</b><span>${nl(n.secret)}</span><b>DM notu</b><span>${nl(n.tips)}</span></div>`)).join("")}</div>
-      ${S.encounters ? `<div class="card"><h3>Karşılaşmalar</h3>${S.encounters.map(e => det(e.where, `<p style="margin:0 0 6px">${nl(e.what)}</p><p class="hint"><b>Alternatif:</b> ${nl(e.alt)}</p>`)).join("")}</div>` : ""}
-      <div class="card"><h3>Yaratıklar</h3>${S.monsters.map(m => det(m.name, `<p class="small muted" style="margin:0 0 6px">${esc(m.base)}</p><div class="pre">${esc(m.stats)}</div><p class="hint"><b>Taktik:</b> ${nl(m.tactics)}</p>`)).join("")}</div>
-      <div class="card"><h3>İpucu takibi</h3><p class="hint" style="margin:0 0 6px">Oyuncular bulunca işaretle; cihazlar arası senkron.</p>${checklist(S.clues, "clues")}</div>
-      <div class="card"><h3>Hazırlık</h3>${checklist(S.prep, "prep")}</div>`;
+
+      <div class="card" id="s-gercek"><h3>Gerçek (sadece DM)</h3>${list(S.truth)}</div>
+      ${S.glamour ? `<div class="card" id="s-glamour"><h3>Glamour nasıl çalışır</h3>${list(S.glamour)}</div>` : ""}
+      <div class="card" id="s-kum"><h3>${esc(S.clock.name)}</h3>${list(S.clock.rules)}<h3 class="sec">Kilitler: her karakterin sahnesi</h3><table class="simple"><tr><th>Kim · yetenek</th><th>Nerede</th><th>Ne olur</th></tr>${S.locks.map(l => `<tr>${l.map(x => `<td>${esc(x)}</td>`).join("")}</tr>`).join("")}</table></div>
+      <div class="card" id="s-npc"><h3>NPC'ler</h3>${S.npcs.map(n => det(`${n.name} · ${n.role}`, `<div class="kv"><b>Görünüş</b><span>${nl(n.look)}</span><b>Ses</b><span>${nl(n.voice)}</span><b>İster</b><span>${nl(n.wants)}</span><b>Sır</b><span>${nl(n.secret)}</span><b>DM notu</b><span>${nl(n.tips)}</span></div>`)).join("")}</div>
+      ${S.encounters ? `<div class="card" id="s-kars"><h3>Karşılaşmalar</h3>${S.encounters.map(e => det(e.where, `${para(e.what)}<p class="hint"><b>Alternatif:</b> ${nl(e.alt)}</p>`)).join("")}</div>` : ""}
+      <div class="card" id="s-yaratik"><h3>Yaratıklar</h3>${S.monsters.map(m => det(m.name, `<p class="small muted" style="margin:0 0 6px">${esc(m.base)}</p><div class="pre">${esc(m.stats)}</div><p class="hint"><b>Taktik:</b> ${nl(m.tactics)}</p>`)).join("")}</div>
+      <div class="card" id="s-ipucu"><h3>İpucu takibi</h3><p class="hint" style="margin:0 0 6px">Oyuncular bulunca işaretle; cihazlar arası senkron.</p>${checklist(S.clues, "clues")}</div>
+      <div class="card" id="s-hazirlik"><h3>Hazırlık</h3>${checklist(S.prep, "prep")}</div>`;
     el.querySelectorAll("[data-ck]").forEach(cb => cb.onchange = () => { store.set("shared/" + cb.dataset.ck, cb.checked); render(); });
+    el.querySelectorAll("[data-handout-add]").forEach(b => b.onclick = () => {
+      const h = S.handouts[Number(b.dataset.handoutAdd)];
+      const cur = state.shared.notes || "";
+      const block = `${cur.trim() ? cur.replace(/\s+$/, "") + "\n\n" : ""}— ${h.title} —\n${h.text}\n`;
+      store.set("shared/notes", block);
+      toast(`"${h.title}" ortak notlara eklendi.`);
+    });
+    el.querySelectorAll("[data-handout-copy]").forEach(b => b.onclick = async () => {
+      const h = S.handouts[Number(b.dataset.handoutCopy)];
+      try { await navigator.clipboard.writeText(h.text); toast("Panoya kopyalandı."); } catch { toast("Kopyalama izni yok; metni seçip kopyala."); }
+    });
+    el.querySelectorAll(".toc a").forEach(a => a.onclick = e => { e.preventDefault(); const t = document.querySelector(a.getAttribute("href")); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); });
   }
 
   // ---------- ortak ----------

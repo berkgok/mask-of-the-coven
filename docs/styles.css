@@ -202,3 +202,10 @@ details.off summary { cursor: default; }
 .checklist input { width: 20px; height: 20px; margin-top: 2px; accent-color: var(--c1); }
 .checklist label.done { color: var(--muted); text-decoration: line-through; }
 .pre { white-space: pre-line; }
+
+/* ---- DM hikâye: içindekiler ve düz yazı ---- */
+.toc { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 4px; }
+.toc a { font-size: .8rem; padding: 5px 10px; border-radius: 999px; background: var(--card2); border: 1px solid var(--line); color: var(--text); text-decoration: none; }
+.toc a:hover { border-color: var(--c1); }
+.prose { margin: 0 0 8px; line-height: 1.65; color: #e6e0ef; }
+details > .body .prose { margin-top: 4px; }
