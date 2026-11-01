@@ -1,0 +1,8 @@
+# Telif ve gizli içerik: asla push edilmez
+resources/
+prep/
+.claude/
+# yerel
+*.log
+.DS_Store
+Thumbs.db
